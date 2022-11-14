@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tính Calo</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-size: 18px;
+    }
+
+    .minus,
+    .plus {
+      width: 40px;
+    }
+
+    .minus {
+      margin-right: 10px;
+    }
+
+    .plus {
+      margin-left: 10px;
+    }
+
+  </style>
+</head>
+
+<body>
+  Cân nặng: <input type="text" id='cannang' value='79'/>
+  <button type='button' onclick='tinhtdee()'>Tính TDEE</button><br><br>
+  Số calo được đớp:
+  <span id='tdee' style='color: red; font-size: 20px;'></span>
+  <table id='thucan'></table>
+  <br>
+
+  <button type='button' onclick='tinhcalo()'>Tính Calo</button><br><br>
+
+  <div id='khoiluong' style='color: orange;'></div>
+  <div id='khoiluongan' style='color: blue'></div>
+  Tổng calo: <span id='tongcalo' style='color: red; font-size: 20px;'></span>
+  <script>
+    function tinhtdee() {
+      const cannang = document.getElementById('cannang').value;
+      if (!cannang) {
+        alert('Chưa nhập cân nặng');
+      } else {
+        const BMR = 88.362 + (13.397 * cannang) + (4.799 * 169) - (5.677 * 28);
+        document.getElementById('tdee').innerHTML = BMR * 1.375 - 500;
+      }
+    }
+
+    const caloTrongChat = {
+      protein: 4,
+      carb: 4,
+      fat: 9
+    };
+
+    const thucAn = {
+      gao: {
+        name: 'Gạo',
+        protein: 2.7,
+        carb: 28.2,
+        fat: 0.3,
+        donvi: '100g'
+      },
+      ucga: {
+        name: 'Ức gà',
+        protein: 31,
+        carb: 0,
+        fat: 3.6,
+        donvi: '100g'
+      },
+      khoailang: {
+        name: 'Khoai lang',
+        protein: 1.6,
+        carb: 20,
+        fat: 0.1,
+        donvi: '100g'
+      },
+      ngo: {
+        name: 'Ngô',
+        protein: 5.4,
+        carb: 41,
+        fat: 2.1,
+        donvi: '100g'
+      },
+      trung: {
+        name: 'Trứng',
+        protein: 13,
+        carb: 1.1,
+        fat: 11,
+        donvi: '100g'
+      },
+      duachuot: {
+        name: 'Dưa chuột',
+        protein: 2,
+        carb: 3.3,
+        fat: 0,
+        donvi: '100g'
+      },
+      dauphu: {
+        name: 'Đậu phụ',
+        protein: 8,
+        carb: 1.9,
+        fat: 4.8,
+        donvi: '100g'
+      },
+      banhmi: {
+        name: 'Bánh mì',
+        protein: 1,
+        carb: 48,
+        fat: 4,
+        donvi: '100g'
+      },
+      tao: {
+        name: 'Táo',
+        protein: 0.3,
+        carb: 14,
+        fat: 0.2,
+        donvi: '100g'
+      }
+    };
+
+    let html = '';
+    Object.entries(thucAn).forEach(([key, value]) => {
+      html += '<tr><td>' + value.name + '</td>';
+      html += `<td><button class="minus" onclick="minus(event)" type="button"> - </button><input type="number" min="0" class="thucan-inp" id="${key}"><button class="plus" onclick="plus(event)" type="button"> + </button> * ${value.donvi} </td>`;
+      html += `<td> (Protein: ${value.protein} || Fat: ${value.fat}|| Carb: ${value.carb})</td></tr>`;
+    });
+
+    document.getElementById('thucan').innerHTML = html;
+
+    function minus(e) {
+      const minus = e.target;
+      let inputval = minus.nextSibling.value;
+      if (inputval !== "" && inputval > 1) {
+        minus.nextSibling.value = Number(inputval) - 1
+      } else {
+        minus.nextSibling.value = 0
+      }
+    }
+
+    function plus(e) {
+      const plus = e.target;
+      let inputval = plus.previousSibling.value;
+      if (inputval !== "") {
+        plus.previousSibling.value = Number(inputval) + 1
+      } else {
+        plus.previousSibling.value = 1
+      }
+    }
+
+    function tinhcalo() {
+      let calo = 0;
+      const cannang = document.getElementById('cannang').value;
+      const caloduocan = Number(document.getElementById('tdee').innerText);
+
+      if (!caloduocan) {
+        alert('Chưa tính tdee');
+
+        return;
+      }
+
+      const caloFromProtein = caloTrongChat.protein * 2.6 * cannang;
+      const caloFromFat = (caloduocan - caloFromProtein) / 15;
+      const calofromCarb = caloduocan - caloFromProtein - caloFromFat;
+
+      const thucan = document.getElementsByClassName("thucan-inp");
+
+      let caloTuProtein = 0;
+      let caloTuFat = 0;
+      let caloTuCarb = 0;
+
+      let good = false;
+
+      Object.values(thucan).forEach(item => {
+        if (item.value !== "" && item.value > 0) {
+          caloTuProtein += (thucAn[item.id].protein) > 0 ? item.value * (thucAn[item.id].protein) * caloTrongChat.protein : 0;
+          caloTuFat += (thucAn[item.id].fat) > 0 ? item.value * (thucAn[item.id].fat) * caloTrongChat.fat : 0;
+          caloTuCarb += (thucAn[item.id].carb) > 0 ? item.value * (thucAn[item.id].carb) * caloTrongChat.carb : 0;
+        }
+      })
+
+      if (caloTuProtein > caloFromProtein) {
+        alert("Thừa protein");
+      } else if (caloTuFat > caloFromFat) {
+        alert("Thừa fat");
+      } else if (caloTuCarb > calofromCarb) {
+        alert("Thừa carb");
+      } else {
+        good = true;
+      }
+
+      calo = caloTuProtein + caloTuFat + caloTuCarb;
+
+      document.getElementById('khoiluong').innerHTML = `Protein: ${caloFromProtein} || Fat: ${caloFromFat} || Carb: ${calofromCarb}`;
+      document.getElementById('khoiluongan').innerHTML = `Protein: ${caloTuProtein} || Fat: ${caloTuFat} || Carb: ${caloTuCarb}`;
+      document.getElementById('tongcalo').innerHTML = calo;
+      if (good == true) {
+        document.getElementById('tongcalo').style.color = "green";
+      }
+    }
+  </script>
+</body>
+
+</html>
